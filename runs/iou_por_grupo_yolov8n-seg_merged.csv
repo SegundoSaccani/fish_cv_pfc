@@ -1,0 +1,10 @@
+,n,n,IoU_medio,IoU_medio,IoU_mediana,IoU_mediana,IoU_std,IoU_std,pct_IoU_menor_05,pct_IoU_menor_05
+split,test,val,test,val,test,val,test,val,test,val
+grupo,,,,,,,,,,
+roboflow: pez (general),718.0,718.0,0.871,0.886,0.956,0.959,0.185,0.167,6.685,5.571
+parana: boga,32.0,16.0,0.812,0.924,0.922,0.936,0.227,0.041,15.625,0.0
+parana: dorado,28.0,29.0,0.909,0.858,0.947,0.939,0.115,0.245,3.571,6.897
+parana: palometa,53.0,54.0,0.931,0.941,0.965,0.962,0.12,0.078,1.887,0.0
+parana: sabalo,40.0,41.0,0.91,0.862,0.949,0.948,0.157,0.195,2.5,12.195
+parana: surubi_pintado,15.0,15.0,0.745,0.851,0.932,0.912,0.354,0.183,20.0,6.667
+parana: tararira,41.0,39.0,0.813,0.805,0.909,0.92,0.249,0.258,9.756,7.692

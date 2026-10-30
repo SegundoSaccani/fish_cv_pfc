@@ -1,3 +1,6 @@
 .env
 /dataset/
 *.pt
+/datasets_roboflow/
+/dataset_merged/
+/dataset_crops/
