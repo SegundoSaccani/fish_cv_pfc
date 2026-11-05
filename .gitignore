@@ -4,3 +4,8 @@
 /datasets_roboflow/
 /dataset_merged/
 /dataset_crops/
+/descargadas/
+/dataset_especies/
+/dataset_pescado/
+/dataset_pescado_3merged/
+__pycache__/
