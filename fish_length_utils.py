@@ -83,10 +83,30 @@ def px_por_cm_desde_aruco(corners, tamano_cm=TAMANO_ARUCO_CM):
     return float(lados.mean() / tamano_cm)
 
 
+def homografia_px_a_cm(corners, tamano_cm=TAMANO_ARUCO_CM):
+    """Homografía H (3x3) de píxeles a cm a partir de las 4 esquinas (4, 2) del ArUco (corrige la perspectiva)."""
+    dst = np.array([(0, 0), (tamano_cm, 0), (tamano_cm, tamano_cm), (0, tamano_cm)], dtype=np.float32)
+    H, _ = cv2.findHomography(np.asarray(corners, dtype=np.float32).reshape(4, 2), dst)
+    if H is None:
+        raise ValueError("No se pudo calcular la homografía con las esquinas del ArUco")
+    return H
+
+
+def proyectar_cm(pts_px, H):
+    """Proyecta puntos (N, 2) en píxeles al plano métrico (cm) con la homografía H. Devuelve (N, 2) float64."""
+    p = np.asarray(pts_px, dtype=np.float32).reshape(-1, 1, 2)
+    return cv2.perspectiveTransform(p, np.asarray(H, dtype=np.float64)).reshape(-1, 2).astype(np.float64)
+
+
+def longitud_cm(pts_px, H):
+    """Longitud (cm) de la poligonal `pts_px` (N, 2): se proyecta con H y se suman las distancias entre puntos."""
+    return float(np.sum(np.linalg.norm(np.diff(proyectar_cm(pts_px, H), axis=0), axis=1)))
+
+
 def preparar_imagen(path, model, conf=CONF, imgsz=IMGSZ, aruco_id=ARUCO_ID, tamano_aruco_cm=TAMANO_ARUCO_CM):
     """Lee la imagen, segmenta los peces y calibra la escala con el ArUco `aruco_id`.
 
-    Devuelve dict con: img, masks, confs, aruco_corners, aruco_ids, aruco_idx, px_por_cm, estado.
+    Devuelve dict con: img, masks, confs, aruco_corners, aruco_ids, aruco_idx, px_por_cm, H (homografía px->cm), estado.
     `estado` es "ok" o el motivo por el que no se puede medir ("sin_peces", "sin_aruco", "aruco_id_incorrecto")."""
     img = cv2.imread(str(path))
     if img is None:
@@ -94,7 +114,7 @@ def preparar_imagen(path, model, conf=CONF, imgsz=IMGSZ, aruco_id=ARUCO_ID, tama
     masks, confs = fish_masks(img, model, conf, imgsz)
     corners, ids = detect_aruco(img)
     out = dict(img=img, masks=masks, confs=confs, aruco_corners=corners, aruco_ids=ids,
-               aruco_idx=None, px_por_cm=float("nan"), estado="ok")
+               aruco_idx=None, px_por_cm=float("nan"), H=None, estado="ok")
     if not corners:
         out["estado"] = "sin_aruco"
     elif aruco_id not in ids:
@@ -102,6 +122,7 @@ def preparar_imagen(path, model, conf=CONF, imgsz=IMGSZ, aruco_id=ARUCO_ID, tama
     else:
         out["aruco_idx"] = ids.index(aruco_id)
         out["px_por_cm"] = px_por_cm_desde_aruco(corners[out["aruco_idx"]], tamano_aruco_cm)
+        out["H"] = homografia_px_a_cm(corners[out["aruco_idx"]], tamano_aruco_cm)
     if out["estado"] == "ok" and not masks:
         out["estado"] = "sin_peces"
     return out
